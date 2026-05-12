@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#fff7ed"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="assets/icon-192.png"/>
+<title>CozyPost</title>
+<style>
+:root{
+  --ink:#1f2937;
+  --muted:#6b7280;
+  --card:rgba(255,255,255,.78);
+  --shadow:0 20px 50px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--ink);
+  min-height:100vh;
+  transition:.2s;
+}
+body.cozy{background:linear-gradient(180deg,#d8b98d,#c89f71);}
+body.glass{
+  background:
+    radial-gradient(circle at 20% 14%,rgba(128,210,255,.16),transparent 34%),
+    radial-gradient(circle at 86% 2%,rgba(255,150,235,.13),transparent 30%),
+    radial-gradient(circle at 60% 80%,rgba(180,255,230,.10),transparent 34%),
+    linear-gradient(180deg,#fbfdff,#eef5ff);
+}
+body.minimal{background:#f7f7f8;}
+.app{max-width:1080px;margin:auto;padding:18px 18px 88px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.title{font-size:34px;font-weight:950;letter-spacing:-.055em}
+.sub{opacity:.65;margin-top:6px;font-size:14px}
+.iconRow{display:flex;gap:10px}
+.iconBtn{
+  border:0;background:rgba(255,255,255,.84);border-radius:18px;padding:12px 14px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);font-size:18px;cursor:pointer;color:#1f2937;
+}
+.panel{
+  margin-top:18px;background:var(--card);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.7);border-radius:32px;padding:20px;
+  box-shadow:var(--shadow);
+}
+.stepTitle{font-size:15px;font-weight:900;margin-bottom:12px;color:#374151}
+textarea{
+  width:100%;min-height:190px;border:0;outline:none;resize:vertical;
+  background:rgba(255,255,255,.52);border-radius:26px;padding:18px;
+  font-size:20px;line-height:1.5;color:#111827;
+}
+body.minimal textarea{background:white;border:1px solid #e5e7eb}
+.preview{
+  white-space:pre-wrap;background:rgba(255,255,255,.55);border-radius:22px;padding:16px;
+  font-size:16px;line-height:1.5;margin-bottom:14px;
+}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.choice{
+  border:0;border-radius:24px;padding:18px 12px;min-height:76px;
+  font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 10px 22px rgba(0,0,0,.08);
+  color:#1f2937;
+}
+.choice small{display:block;font-weight:700;opacity:.55;margin-top:4px}
+.blue{background:#bfdbfe}.red{background:#fecaca}.yellow{background:#fef08a}.white{background:#fff}
+.black{background:#111827;color:white}
+.ghost{background:rgba(255,255,255,.78);color:#374151;border:1px solid rgba(229,231,235,.9)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{cursor:pointer}
+.action{
+  border:0;border-radius:18px;padding:12px 16px;font-weight:900;font-size:14px;
+  box-shadow:0 10px 22px rgba(0,0,0,.08);
+}
+.boardTop{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:28px 0 12px}
+h2{font-size:24px;margin:0;font-weight:950;letter-spacing:-.04em}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.filterBtn{
+  white-space:nowrap;border:0;border-radius:999px;padding:10px 13px;font-weight:900;
+  background:rgba(255,255,255,.76);color:#374151;box-shadow:0 8px 18px rgba(0,0,0,.06);
+}
+.filterBtn.active{background:#111827;color:white}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px}
+.note{
+  padding:20px;min-height:170px;position:relative;overflow:hidden;animation:drop .22s ease-out;
+  border:1px solid rgba(255,255,255,.55);
+}
+@keyframes drop{from{opacity:0;transform:translateY(-18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slap{
+  0%{opacity:0;transform:translateY(-88px) rotate(-5deg) scale(1.04)}
+  65%{opacity:1;transform:translateY(4px) rotate(1.5deg) scale(.98)}
+  82%{transform:translateY(-2px) rotate(-.8deg) scale(1.01)}
+  100%{transform:translateY(0) rotate(var(--rot)) scale(1)}
+}
+.note.fresh.cozyAnim{animation:slap .42s cubic-bezier(.2,.9,.2,1.05)}
+body.cozy .note{
+  border-radius:6px 6px 18px 8px;box-shadow:0 18px 30px rgba(0,0,0,.15);
+  transform:rotate(var(--rot));
+}
+body.cozy .note::before{
+  content:"";position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  width:60px;height:18px;background:rgba(255,255,255,.45);border-radius:4px;
+}
+body.glass .note{
+  background:rgba(255,255,255,var(--alpha)) !important;
+  border:1px solid rgba(255,255,255,.62);border-radius:28px;backdrop-filter:blur(20px);
+  box-shadow:0 22px 46px rgba(130,150,255,.14);
+}
+body.glass .note::before{
+  content:"";position:absolute;inset:0;background:
+  linear-gradient(135deg,rgba(255,255,255,.36),rgba(180,220,255,.08),rgba(255,180,255,.06));
+  pointer-events:none;
+}
+body.minimal .note{
+  background:white !important;border-radius:14px;border-left:5px solid var(--pin);
+  box-shadow:0 12px 24px rgba(0,0,0,.06);padding-top:44px;
+}
+body.minimal .note::before{
+  content:"";position:absolute;top:14px;left:16px;width:12px;height:12px;background:var(--pin);
+  border-radius:999px;box-shadow:var(--pins);
+}
+.noteMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;opacity:.65;font-weight:900;position:relative;z-index:1}
+.noteText{font-size:18px;line-height:1.5;font-weight:760;margin-top:12px;white-space:pre-wrap;word-break:break-word;position:relative;z-index:1}
+.noteActions{display:flex;gap:6px;margin-top:16px;position:relative;z-index:1}
+.mini{border:0;border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.42);font-size:12px;font-weight:900;color:inherit}
+.empty{text-align:center;color:#6b7280;padding:42px 18px;border:1px dashed #cbd5e1;border-radius:28px;background:rgba(255,255,255,.45)}
+.doneList{display:none;margin-top:16px;background:rgba(255,255,255,.70);border-radius:28px;padding:14px;box-shadow:var(--shadow)}
+.doneItem{display:flex;justify-content:space-between;gap:10px;padding:12px;border-radius:18px;background:rgba(255,255,255,.72);margin-top:8px}
+.settings{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);align-items:center;justify-content:center;
+  padding:20px;z-index:10;
+}
+.settingsPanel{background:white;width:min(420px,100%);border-radius:30px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.25)}
+.settingRow{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px}
+select,input{font-size:16px}
+.toast{
+  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+  background:#111827;color:white;border-radius:999px;padding:10px 14px;
+  font-size:13px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:20;
+}
+.toast.show{opacity:1;bottom:30px}
+@media(max-width:760px){
+  .top{align-items:flex-start}
+  .title{font-size:31px}
+  .grid{grid-template-columns:1fr 1fr}
+  .board{grid-template-columns:1fr}
+  .choice{min-height:68px}
+  textarea{min-height:220px}
+}
+</style>
+</head>
+<body class="cozy">
+<div class="app">
+  <div class="top">
+    <div>
+      <div class="title">CozyPost</div>
+      <div class="sub">Drop thoughts, not pressure.</div>
+    </div>
+    <div class="iconRow">
+      <button class="iconBtn" onclick="randomThought()" title="Random Thought">⌘</button>
+      <button class="iconBtn" onclick="toggleDone()" title="Done Log">◌</button>
+      <button class="iconBtn" onclick="openSettings()" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <section class="panel">
+    <div id="stepWrite">
+      <div class="stepTitle">What crossed your mind?</div>
+      <textarea id="memoText" placeholder="例：UIテーマを3種類にして、ポストイットはペタッと貼る"></textarea>
+      <div class="row">
+        <button class="action black" onclick="goCategory()">Drop</button>
+      </div>
+    </div>
+
+    <div id="stepCategory" style="display:none">
+      <div class="stepTitle">Choose a place for this thought.</div>
+      <div class="preview" id="categoryPreview"></div>
+      <div class="grid">
+        <button class="choice blue" onclick="chooseCategory('curious')">🔎 Curious</button>
+        <button class="choice red" onclick="chooseCategory('explore')">✨ Explore</button>
+        <button class="choice yellow" onclick="chooseCategory('think')">💭 Think about</button>
+        <button class="choice white" onclick="chooseCategory('keep')">📌 Keep here</button>
+      </div>
+      <div class="row"><button class="action ghost" onclick="showStep('write')">Back</button></div>
+    </div>
+
+    <div id="stepTiming" style="display:none">
+      <div class="stepTitle">When should it resurface?</div>
+      <div class="preview" id="timingPreview"></div>
+      <div class="grid">
+        <button class="choice white" onclick="saveMemo('today')">Today<small>今日中</small></button>
+        <button class="choice white" onclick="saveMemo('weeks')">1–2 weeks<small>1〜2週間</small></button>
+        <button class="choice white" onclick="saveMemo('month')">This month<small>1ヶ月</small></button>
+        <button class="choice white" onclick="saveMemo('someday')">Someday<small>気が向いたら</small></button>
+      </div>
+      <div class="row"><button class="action ghost" onclick="showStep('category')">Back</button></div>
+    </div>
+  </section>
+
+  <div class="boardTop">
+    <div>
+      <h2>Sticky Board</h2>
+      <div class="hint">Red=Explore / Blue=Curious / Yellow=Think about / White=Keep here</div>
+    </div>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="board" id="board"></div>
+
+  <div class="doneList" id="doneList"></div>
+</div>
+
+<div class="settings" id="settings">
+  <div class="settingsPanel">
+    <h2>Settings</h2>
+    <div class="settingRow">
+      <label>Theme</label>
+      <select id="themeSelect" onchange="setTheme(this.value)">
+        <option value="cozy">Cozy Sticky</option>
+        <option value="glass">Soft Glass</option>
+        <option value="minimal">Minimal Focus</option>
+      </select>
+    </div>
+    <div class="settingRow">
+      <label>Sound</label>
+      <input id="soundToggle" type="checkbox" checked onchange="settingsData.sound=this.checked;persist()">
+    </div>
+    <div class="settingRow">
+      <label>Shake animation</label>
+      <input id="shakeToggle" type="checkbox" checked onchange="settingsData.shake=this.checked;persist()">
+    </div>
+    <div class="settingRow">
+      <label>Language</label>
+      <select id="langSelect" onchange="setLang(this.value)">
+        <option value="ja">日本語</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <hr style="border:0;border-top:1px solid #e5e7eb;margin:18px 0 8px">
+    <div class="settingRow">
+      <label>Backup</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="action ghost" onclick="exportJson()">Export JSON</button>
+        <button class="action ghost" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importJson(event)">
+      </div>
+    </div>
+    <div class="row">
+      <button class="action black" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Dropped</div>
+
+<script>
+const KEY="cozypost-v1";
+const labels={
+  en:{
+    appSub:"Drop thoughts, not pressure.",
+    prompt:"What crossed your mind?",
+    placeholder:"Example: Make the sticky note slap onto the board when saved.",
+    drop:"Drop",
+    choose:"Choose a place for this thought.",
+    timing:"When should it resurface?",
+    board:"Sticky Board",
+    hint:"Red=Explore / Blue=Curious / Yellow=Think about / White=Keep here",
+    all:"All",
+    done:"Done",
+    del:"Delete",
+    restore:"Restore",
+    doneLog:"Done Log",
+    doneEmpty:"Done log is empty.",
+    noThoughts:"No thoughts yet",
+    settings:"Settings",
+    theme:"Theme",
+    sound:"Sound",
+    shake:"Shake animation",
+    language:"Language",
+    backup:"Backup",
+    close:"Close",
+    exported:"Exported",
+    imported:"Imported",
+    importFailed:"Import failed",
+    dropped:"Dropped",
+    categories:{
+      all:"All",
+      curious:"Curious",
+      explore:"Explore",
+      think:"Think about",
+      keep:"Keep here"
+    },
+    times:{
+      today:"Today",
+      weeks:"1–2 weeks",
+      month:"This month",
+      someday:"Someday"
+    }
+  },
+  ja:{
+    appSub:"思考を置く。圧は置かない。",
+    prompt:"何か浮かんだ？",
+    placeholder:"例：UIテーマを3種類にして、ポストイットはペタッと貼る",
+    drop:"置く",
+    choose:"この思考をどこに置く？",
+    timing:"いつ頃また見返したい？",
+    board:"メモ一覧",
+    hint:"赤=やりたい / 青=知りたい / 黄=考えたい / 白=その他",
+    all:"全部",
+    done:"完了",
+    del:"削除",
+    restore:"戻す",
+    doneLog:"完了ログ",
+    doneEmpty:"完了ログはまだありません。",
+    noThoughts:"まだメモがありません",
+    settings:"設定",
+    theme:"テーマ",
+    sound:"音",
+    shake:"貼り付け演出",
+    language:"言語",
+    backup:"バックアップ",
+    close:"閉じる",
+    exported:"書き出しました",
+    imported:"読み込みました",
+    importFailed:"読み込み失敗",
+    dropped:"置きました",
+    categories:{
+      all:"全部",
+      curious:"知りたい",
+      explore:"やりたい",
+      think:"考えたい",
+      keep:"その他"
+    },
+    times:{
+      today:"今日中",
+      weeks:"1〜2週間",
+      month:"1ヶ月",
+      someday:"気が向いたら"
+    }
+  }
+};
+
+const cats={
+  all:{key:"all",icon:"",color:""},
+  curious:{key:"curious",icon:"🔎",color:"blue"},
+  explore:{key:"explore",icon:"✨",color:"red"},
+  think:{key:"think",icon:"💭",color:"yellow"},
+  keep:{key:"keep",icon:"📌",color:"white"}
+};
+const times={
+  today:{key:"today",order:1,alpha:.96,pins:"14px 0 0 var(--pin),28px 0 0 var(--pin)"},
+  weeks:{key:"weeks",order:2,alpha:.78,pins:"14px 0 0 var(--pin)"},
+  month:{key:"month",order:3,alpha:.56,pins:"none"},
+  someday:{key:"someday",order:4,alpha:.36,pins:"none"}
+};
+let store=load();
+let memos=store.memos||[];
+let done=store.done||[];
+let settingsData={theme:"cozy",sound:true,shake:true,lang:"ja",...(store.settings||{})};
+let current={text:"",cat:null};
+let filter="all";
+let showDone=false;
+
+function L(){return labels[settingsData.lang]||labels.ja}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch{return {}}}
+function persist(){localStorage.setItem(KEY,JSON.stringify({memos,done,settings:settingsData}))}
+function uid(){return Date.now()+"-"+Math.random().toString(16).slice(2)}
+function rot(){return (Math.random()*4-2).toFixed(2)+"deg"}
+function showStep(s){
+  stepWrite.style.display=s==="write"?"block":"none";
+  stepCategory.style.display=s==="category"?"block":"none";
+  stepTiming.style.display=s==="timing"?"block":"none";
+}
+function goCategory(){
+  const t=memoText.value.trim();
+  if(!t)return;
+  current.text=t;
+  categoryPreview.textContent=t;
+  showStep("category");
+}
+function chooseCategory(cat){
+  current.cat=cat;
+  timingPreview.textContent=current.text;
+  showStep("timing");
+}
+function saveMemo(time){
+  if(!current.text||!current.cat)return;
+  memos.unshift({id:uid(),text:current.text,cat:current.cat,time,createdAt:new Date().toISOString(),rot:rot(),fresh:true});
+  current={text:"",cat:null};
+  memoText.value="";
+  showStep("write");
+  persist();render();beep();toast(L().dropped);
+  setTimeout(()=>{memos.forEach(m=>m.fresh=false);persist()},500);
+}
+function doneMemo(id){
+  const m=memos.find(x=>x.id===id);
+  if(!m)return;
+  memos=memos.filter(x=>x.id!==id);
+  done.unshift({...m,doneAt:new Date().toISOString(),fresh:false});
+  persist();render();beep();toast(L().done);
+}
+function deleteMemo(id){memos=memos.filter(x=>x.id!==id);persist();render()}
+function restoreMemo(id){
+  const m=done.find(x=>x.id===id);
+  if(!m)return;
+  done=done.filter(x=>x.id!==id);
+  memos.unshift({...m,fresh:true});
+  persist();render();
+}
+function setFilter(f){filter=f;render()}
+function setTheme(t){settingsData.theme=t;document.body.className=t;themeSelect.value=t;persist();render()}
+function setLang(lang){settingsData.lang=lang;persist();render()}
+function openSettings(){settings.style.display="flex"}
+function closeSettings(){settings.style.display="none"}
+function toggleDone(){showDone=!showDone;render()}
+function randomThought(){
+  const pool=[...memos,...done];
+  if(!pool.length){toast(L().noThoughts);return}
+  const m=pool[Math.floor(Math.random()*pool.length)];
+  alert(`${cats[m.cat].icon} ${L().categories[m.cat]}\n${L().times[m.time]}\n\n${m.text}`);
+}
+function exportJson(){
+  const blob=new Blob([JSON.stringify({memos,done,settings:settingsData},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="cozypost-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(L().exported);
+}
+function importJson(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const imported=JSON.parse(reader.result);
+      memos=imported.memos||[];
+      done=imported.done||[];
+      settingsData={theme:"cozy",sound:true,shake:true,lang:"ja",...(imported.settings||{})};
+      persist();render();toast(L().imported);
+    }catch(err){toast(L().importFailed)}
+  };
+  reader.readAsText(file);
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1100)}
+function beep(){
+  if(!settingsData.sound)return;
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.frequency.value=520;g.gain.value=.04;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.08);
+  }catch(e){}
+}
+function renderStaticText(){
+  document.querySelector(".sub").textContent=L().appSub;
+  document.querySelector("#stepWrite .stepTitle").textContent=L().prompt;
+  memoText.placeholder=L().placeholder;
+  document.querySelector("#stepWrite .black").textContent=L().drop;
+  document.querySelector("#stepCategory .stepTitle").textContent=L().choose;
+  document.querySelector("#stepTiming .stepTitle").textContent=L().timing;
+  document.querySelector(".boardTop h2").textContent=L().board;
+  document.querySelector(".hint").textContent=L().hint;
+  document.querySelector(".settingsPanel h2").textContent=L().settings;
+}
+function renderCategoryButtons(){
+  const catGrid=document.querySelector("#stepCategory .grid");
+  catGrid.innerHTML=`
+    <button class="choice blue" onclick="chooseCategory('curious')">🔎 ${L().categories.curious}</button>
+    <button class="choice red" onclick="chooseCategory('explore')">✨ ${L().categories.explore}</button>
+    <button class="choice yellow" onclick="chooseCategory('think')">💭 ${L().categories.think}</button>
+    <button class="choice white" onclick="chooseCategory('keep')">📌 ${L().categories.keep}</button>
+  `;
+  const timeGrid=document.querySelector("#stepTiming .grid");
+  timeGrid.innerHTML=`
+    <button class="choice white" onclick="saveMemo('today')">${L().times.today}</button>
+    <button class="choice white" onclick="saveMemo('weeks')">${L().times.weeks}</button>
+    <button class="choice white" onclick="saveMemo('month')">${L().times.month}</button>
+    <button class="choice white" onclick="saveMemo('someday')">${L().times.someday}</button>
+  `;
+}
+function renderFilters(){
+  filters.innerHTML=Object.keys(cats).map(k=>{
+    const n=k==="all"?memos.length:memos.filter(m=>m.cat===k).length;
+    return `<button class="filterBtn ${filter===k?"active":""}" onclick="setFilter('${k}')">${cats[k].icon} ${L().categories[k]} ${n}</button>`
+  }).join("");
+}
+function noteStyle(m){
+  const time=times[m.time];
+  let pin="#94a3b8";
+  if(m.cat==="explore")pin="#fb7185";
+  if(m.cat==="curious")pin="#60a5fa";
+  if(m.cat==="think")pin="#facc15";
+  return `--rot:${m.rot||"0deg"};--alpha:${time.alpha};--pin:${pin};--pins:${time.pins}`;
+}
+function renderBoard(){
+  const list=memos.filter(m=>filter==="all"||m.cat===filter).sort((a,b)=>times[a.time].order-times[b.time].order);
+  if(!list.length){board.innerHTML='<div class="empty">'+(settingsData.lang==="ja"?"ここに思考が貼られます。":"Your thoughts will gather here.")+'</div>';return}
+  board.innerHTML=list.map(m=>{
+    const cat=cats[m.cat],time=times[m.time];
+    return `<article class="note ${cat.color} ${m.fresh&&settingsData.shake?'fresh cozyAnim':''}" style="${noteStyle(m)}">
+      <div class="noteMeta"><span>${cat.icon} ${L().categories[m.cat]}</span><span>${L().times[m.time]}</span></div>
+      <div class="noteText">${escapeHtml(m.text)}</div>
+      <div class="noteActions">
+        <button class="mini" onclick="doneMemo('${m.id}')">${L().done}</button>
+        <button class="mini" onclick="deleteMemo('${m.id}')">${L().del}</button>
+      </div>
+    </article>`
+  }).join("");
+}
+function renderDone(){
+  doneList.style.display=showDone?"block":"none";
+  if(!showDone)return;
+  if(!done.length){doneList.innerHTML='<div class="hint">'+L().doneEmpty+'</div>';return}
+  doneList.innerHTML="<h2>"+L().doneLog+"</h2>"+done.map(m=>`<div class="doneItem"><div><b>${cats[m.cat].icon} ${escapeHtml(m.text)}</b><div class="hint">${L().categories[m.cat]} / ${L().times[m.time]}</div></div><button class="mini" onclick="restoreMemo('${m.id}')">${L().restore}</button></div>`).join("");
+}
+function renderSettingsLabels(){
+  const rows=document.querySelectorAll(".settingRow label");
+  if(rows[0])rows[0].textContent=L().theme;
+  if(rows[1])rows[1].textContent=L().sound;
+  if(rows[2])rows[2].textContent=L().shake;
+  if(rows[3])rows[3].textContent=L().language;
+  if(rows[4])rows[4].textContent=L().backup;
+  const closeBtn=document.querySelector(".settingsPanel .black");
+  if(closeBtn)closeBtn.textContent=L().close;
+}
+function render(){
+  document.body.className=settingsData.theme;
+  themeSelect.value=settingsData.theme;
+  if(document.getElementById("langSelect")) langSelect.value=settingsData.lang;
+  soundToggle.checked=!!settingsData.sound;
+  shakeToggle.checked=!!settingsData.shake;
+  renderStaticText();
+  renderCategoryButtons();
+  renderSettingsLabels();
+  renderFilters();
+  renderBoard();
+  renderDone();
+}
+render();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+</body>
+</html>
